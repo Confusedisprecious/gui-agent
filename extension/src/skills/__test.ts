@@ -71,7 +71,7 @@ console.log('\nStep 3A — 关键字匹配:');
 test('中文医疗关键词触发匹配', () => {
     const active = matchByKeywords(SKILLS, '帮我搜索患者张三的病历');
     assert(active.length > 0, '应至少匹配一个技能');
-    assert(active[0].name === '医疗规划助手', '应匹配医疗规划助手');
+    assert(active[0].name === 'test-medical', '应匹配test-medical');
     assert(active[0].source === 'keyword', '来源应为 keyword');
 });
 
@@ -111,10 +111,10 @@ test('buildSkillRouterPrompt 空技能返回空字符串', () => {
 console.log('\nStep 4 — 激活执行:');
 
 test('getActivatedInstructions 返回完整指令', () => {
-    const active = [{ name: '医疗规划助手', icon: '🏥', source: 'keyword' as const }];
+    const active = [{ name: 'test-medical', icon: '🏥', source: 'keyword' as const }];
     const instructions = getActivatedInstructions(SKILLS, active);
     assert(instructions.includes('已激活技能'), '应包含激活标记');
-    assert(instructions.includes('<command-name>医疗规划助手</command-name>'), '应包含 command-name 标签');
+    assert(instructions.includes('<command-name>test-medical</command-name>'), '应包含 command-name 标签');
     assert(instructions.includes('患者信息填写'), '应包含技能详细指令');
 });
 
@@ -136,7 +136,7 @@ test('医疗任务匹配并返回指令', () => {
     const { activeSkills, instructions } = matchAndActivate('帮我给患者开处方');
     assert(activeSkills.length > 0, '应匹配技能');
     assert(instructions.length > 0, '应返回指令');
-    assert(instructions.includes('医疗规划助手'), '指令应包含技能名');
+    assert(instructions.includes('test-medical'), '指令应包含技能名');
 });
 
 test('无关任务不触发', () => {

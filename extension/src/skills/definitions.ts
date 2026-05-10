@@ -2,7 +2,7 @@ import type { SkillDefinition } from './types';
 
 export const SKILLS: SkillDefinition[] = [
     {
-        name: '医疗规划助手',
+        name: 'test-medical',
         description: '专门处理医疗规划软件中的患者数据填写、记录搜索、治疗方案制定等任务',
         icon: '🏥',
         triggers: [
