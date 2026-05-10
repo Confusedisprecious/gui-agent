@@ -1,0 +1,30 @@
+{
+    "name": "@medical-agent/ext",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "dev": "wxt",
+        "build": "wxt build",
+        "zip": "wxt zip",
+        "postinstall": "wxt prepare"
+    },
+    "devDependencies": {
+        "@radix-ui/react-label": "^2.1.8",
+        "@radix-ui/react-slot": "^1.2.4",
+        "@radix-ui/react-switch": "^1.2.6",
+        "@tailwindcss/vite": "^4.2.4",
+        "@types/chrome": "^0.1.40",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@wxt-dev/module-react": "^1.2.2",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^1.11.0",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
+        "tailwind-merge": "^3.5.0",
+        "tailwindcss": "^4.2.2",
+        "wxt": "^0.20.25"
+    }
+}
