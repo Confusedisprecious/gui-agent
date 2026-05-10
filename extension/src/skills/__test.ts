@@ -1,8 +1,12 @@
 /**
  * Skills 系统测试脚本
  * 运行: npx tsx src/skills/__test.ts
+ *
+ * 技能文件直接从 definitions/ 目录导入（绕过 Vite 的 import.meta.glob）。
+ * 新增技能后，在这里加一行 import 即可。
  */
-import { SKILLS } from './definitions';
+import testMedical from './definitions/test-medical';
+import type { SkillDefinition } from './types';
 import {
     getSkillsMetadata,
     renderMetadataPrompt,
@@ -11,6 +15,9 @@ import {
     getActivatedInstructions,
     matchAndActivate,
 } from './loader';
+
+// 手动聚合技能列表（Node.js 不支持 import.meta.glob）
+const SKILLS: SkillDefinition[] = [testMedical];
 
 let passed = 0;
 let failed = 0;
@@ -133,14 +140,14 @@ test('不匹配的技能名不注入指令', () => {
 console.log('\n全流程测试 (matchAndActivate):');
 
 test('医疗任务匹配并返回指令', () => {
-    const { activeSkills, instructions } = matchAndActivate('帮我给患者开处方');
+    const { activeSkills, instructions } = matchAndActivate(SKILLS, '帮我给患者开处方');
     assert(activeSkills.length > 0, '应匹配技能');
     assert(instructions.length > 0, '应返回指令');
     assert(instructions.includes('test-medical'), '指令应包含技能名');
 });
 
 test('无关任务不触发', () => {
-    const { activeSkills, instructions } = matchAndActivate('tell me a joke');
+    const { activeSkills, instructions } = matchAndActivate(SKILLS, 'tell me a joke');
     assert(activeSkills.length === 0, '不应匹配');
     assert(instructions === '', '指令应为空');
 });

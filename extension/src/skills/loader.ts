@@ -1,5 +1,4 @@
 import type { SkillDefinition, SkillMetadata, ActiveSkill } from './types';
-import { SKILLS } from './definitions';
 
 // =========================================================================
 //  Step 2 — Metadata Loading (元数据加载)
@@ -105,11 +104,15 @@ export function getActivatedInstructions(
 // =========================================================================
 
 /** Run full matching pipeline and return instructions string */
-export function matchAndActivate(task: string, pageText?: string): {
+export function matchAndActivate(
+    skills: SkillDefinition[],
+    task: string,
+    pageText?: string,
+): {
     activeSkills: ActiveSkill[];
     instructions: string;
 } {
-    const activeSkills = matchByKeywords(SKILLS, task, pageText);
-    const instructions = getActivatedInstructions(SKILLS, activeSkills);
+    const activeSkills = matchByKeywords(skills, task, pageText);
+    const instructions = getActivatedInstructions(skills, activeSkills);
     return { activeSkills, instructions };
 }

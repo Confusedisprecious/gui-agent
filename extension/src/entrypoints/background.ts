@@ -494,7 +494,7 @@ ${skillsMetaPrompt}
         broadcast({ type: 'status_change', session_id: 'native', status: 'running' });
 
         // Step 3-4: Match and activate skills based on task keywords
-        const { activeSkills, instructions: skillInstructions } = matchAndActivate(task);
+        const { activeSkills, instructions: skillInstructions } = matchAndActivate(SKILLS, task);
         if (activeSkills.length > 0) {
             console.log('[MedicalAgent] Skills activated:', activeSkills.map((s) => s.name));
         }
