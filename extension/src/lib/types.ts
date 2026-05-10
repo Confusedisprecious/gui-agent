@@ -13,6 +13,15 @@ export interface ChatMessage {
     timestamp: number;
 }
 
+export interface AgentStep {
+    stepNumber: number;
+    thinking: string;
+    evaluation: string;
+    nextGoal: string;
+    actions: Array<Record<string, unknown>>;
+    url: string;
+}
+
 export const DEFAULT_CONFIG: ModelConfig = {
     apiKey: 'sk-16b78952b84d4e7c9ab071f8ce5e9dca',
     model: 'deepseek-v4-flash',

@@ -2,20 +2,25 @@ import { type FormEvent, useRef, useState } from 'react';
 import type { AgentStatus, ChatMessage } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { MessageBubble } from './MessageBubble';
+import { StepCard } from './StepCard';
+import type { AgentStep } from '@/lib/types';
 
 interface Props {
     messages: ChatMessage[];
+    currentStep: AgentStep | null;
     status: AgentStatus;
+    wsConnected: boolean;
     pageUrl?: string;
     pageTitle?: string;
     onSend: (text: string) => void;
+    onStop: () => void;
     onClear: () => void;
 }
 
 const STATUS_LABELS: Record<AgentStatus, string> = {
     idle: 'Ready',
     connecting: 'Thinking...',
-    running: 'Running...',
+    running: 'Agent running...',
     completed: 'Completed',
     error: 'Error',
     stopped: 'Stopped',
@@ -30,7 +35,10 @@ const STATUS_COLORS: Record<AgentStatus, string> = {
     stopped: 'bg-orange-500',
 };
 
-export function ChatView({ messages, status, pageUrl, pageTitle, onSend, onClear }: Props) {
+export function ChatView({
+    messages, currentStep, status, wsConnected,
+    pageUrl, pageTitle, onSend, onStop, onClear,
+}: Props) {
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -79,22 +87,32 @@ export function ChatView({ messages, status, pageUrl, pageTitle, onSend, onClear
                 </button>
             </div>
 
-            {/* Page indicator */}
+            {/* Connection indicators */}
             {pageUrl && (
                 <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1">
                     <span className="text-xs text-green-400" title={pageUrl}>
-                        &#9679; Connected: {pageTitle || pageUrl}
+                        &#9679; Page: {pageTitle || pageUrl}
                     </span>
                 </div>
             )}
+            <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1">
+                <span className={cn('text-xs', wsConnected ? 'text-green-400' : 'text-red-400')}>
+                    {wsConnected ? '● Browser Control: Connected' : '○ Browser Control: Offline'}
+                </span>
+                {!wsConnected && (
+                    <span className="ml-2 text-xs text-slate-500">
+                        (run start_all.bat for full control)
+                    </span>
+                )}
+            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-3 py-3">
-                {messages.length === 0 && (
+                {messages.length === 0 && !currentStep && (
                     <div className="flex h-full items-center justify-center text-slate-500 text-sm">
                         <div className="text-center">
                             <p className="mb-1 text-lg">&#x1F489;</p>
-                            <p>Ask me anything about the medical planning software</p>
+                            <p>Ask a question or give a browser command</p>
                         </div>
                     </div>
                 )}
@@ -103,10 +121,12 @@ export function ChatView({ messages, status, pageUrl, pageTitle, onSend, onClear
                     <MessageBubble key={msg.id} message={msg} />
                 ))}
 
+                {currentStep && <StepCard step={currentStep} />}
+
                 {isBusy && (
                     <div className="flex justify-start mb-3">
                         <div className="rounded-lg bg-slate-700 px-3 py-2 text-xs text-slate-400">
-                            Thinking...
+                            {status === 'connecting' ? 'Connecting...' : 'Agent working...'}
                         </div>
                     </div>
                 )}
@@ -121,12 +141,23 @@ export function ChatView({ messages, status, pageUrl, pageTitle, onSend, onClear
                     value={input}
                     onChange={handleInput}
                     onKeyDown={handleKeyDown}
-                    placeholder="Enter your message..."
+                    placeholder={wsConnected
+                        ? 'Chat or give browser commands...'
+                        : 'Chat about the current page...'}
                     disabled={isBusy}
                     rows={1}
                     className="w-full resize-none rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
                 />
-                <div className="mt-2 flex justify-end">
+                <div className="mt-2 flex justify-end gap-2">
+                    {status === 'running' && (
+                        <button
+                            type="button"
+                            onClick={onStop}
+                            className="rounded-lg bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                        >
+                            Stop
+                        </button>
+                    )}
                     <button
                         type="submit"
                         disabled={isBusy || !input.trim()}
