@@ -10,7 +10,7 @@ export default defineConfig({
     manifest: {
         name: 'Medical Planning Agent',
         description: 'AI intelligent agent for medical planning software',
-        permissions: ['sidePanel', 'storage', 'tabs'],
+        permissions: ['sidePanel', 'storage', 'tabs', 'scripting', 'activeTab'],
         host_permissions: ['<all_urls>'],
         action: {
             default_title: 'Medical Agent',

@@ -7,7 +7,7 @@ type View = 'chat' | 'config';
 
 export default function App() {
     const [view, setView] = useState<View>('chat');
-    const { status, messages, error, sendMessage, clearMessages } = useAgent();
+    const { status, messages, error, pageUrl, pageTitle, sendMessage, clearMessages } = useAgent();
 
     return (
         <div className="flex h-full flex-col bg-slate-900">
@@ -15,6 +15,8 @@ export default function App() {
                 <ChatView
                     messages={messages}
                     status={status}
+                    pageUrl={pageUrl}
+                    pageTitle={pageTitle}
                     onSend={sendMessage}
                     onClear={clearMessages}
                 />

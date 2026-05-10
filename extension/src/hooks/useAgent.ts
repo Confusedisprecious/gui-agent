@@ -6,6 +6,8 @@ export function useAgent() {
     const [status, setStatus] = useState<AgentStatus>('idle');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [pageUrl, setPageUrl] = useState('');
+    const [pageTitle, setPageTitle] = useState('');
     const [history, setHistory] = useState<Array<{ role: string; content: string }>>([]);
 
     const sendMessage = useCallback(async (message: string) => {
@@ -50,6 +52,11 @@ export function useAgent() {
             ]);
 
             setStatus('idle');
+
+            if (response?.pageContext) {
+                setPageUrl(response.pageContext.url || '');
+                setPageTitle(response.pageContext.title || '');
+            }
         } catch (e) {
             const errMsg = e instanceof Error ? e.message : 'Unknown error';
             setError(errMsg);
@@ -68,6 +75,8 @@ export function useAgent() {
         status,
         messages,
         error,
+        pageUrl,
+        pageTitle,
         sendMessage,
         clearMessages,
     };

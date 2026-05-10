@@ -6,6 +6,8 @@ import { MessageBubble } from './MessageBubble';
 interface Props {
     messages: ChatMessage[];
     status: AgentStatus;
+    pageUrl?: string;
+    pageTitle?: string;
     onSend: (text: string) => void;
     onClear: () => void;
 }
@@ -28,7 +30,7 @@ const STATUS_COLORS: Record<AgentStatus, string> = {
     stopped: 'bg-orange-500',
 };
 
-export function ChatView({ messages, status, onSend, onClear }: Props) {
+export function ChatView({ messages, status, pageUrl, pageTitle, onSend, onClear }: Props) {
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -76,6 +78,15 @@ export function ChatView({ messages, status, onSend, onClear }: Props) {
                     Clear
                 </button>
             </div>
+
+            {/* Page indicator */}
+            {pageUrl && (
+                <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1">
+                    <span className="text-xs text-green-400" title={pageUrl}>
+                        &#9679; Connected: {pageTitle || pageUrl}
+                    </span>
+                </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-3 py-3">
