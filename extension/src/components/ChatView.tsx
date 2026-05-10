@@ -2,22 +2,17 @@ import { type FormEvent, useRef, useState } from 'react';
 import type { AgentStatus, ChatMessage } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { MessageBubble } from './MessageBubble';
-import { StepCard } from './StepCard';
-import type { AgentStep } from '@/lib/types';
 
 interface Props {
     messages: ChatMessage[];
-    currentStep: AgentStep | null;
     status: AgentStatus;
-    wsConnected: boolean;
     onSend: (text: string) => void;
-    onStop: () => void;
     onClear: () => void;
 }
 
 const STATUS_LABELS: Record<AgentStatus, string> = {
     idle: 'Ready',
-    connecting: 'Connecting...',
+    connecting: 'Thinking...',
     running: 'Running...',
     completed: 'Completed',
     error: 'Error',
@@ -26,16 +21,17 @@ const STATUS_LABELS: Record<AgentStatus, string> = {
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
     idle: 'bg-slate-500',
-    connecting: 'bg-yellow-500',
+    connecting: 'bg-yellow-500 animate-pulse',
     running: 'bg-green-500 animate-pulse',
     completed: 'bg-blue-500',
     error: 'bg-red-500',
     stopped: 'bg-orange-500',
 };
 
-export function ChatView({ messages, currentStep, status, wsConnected, onSend, onStop, onClear }: Props) {
+export function ChatView({ messages, status, onSend, onClear }: Props) {
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
@@ -44,6 +40,7 @@ export function ChatView({ messages, currentStep, status, wsConnected, onSend, o
         onSend(text);
         setInput('');
         if (inputRef.current) inputRef.current.style.height = 'auto';
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     }
 
     function handleKeyDown(e: React.KeyboardEvent) {
@@ -61,7 +58,7 @@ export function ChatView({ messages, currentStep, status, wsConnected, onSend, o
         }
     }
 
-    const isRunning = status === 'running' || status === 'connecting';
+    const isBusy = status === 'running' || status === 'connecting';
 
     return (
         <div className="flex h-full flex-col">
@@ -71,28 +68,22 @@ export function ChatView({ messages, currentStep, status, wsConnected, onSend, o
                     <span className={cn('h-2 w-2 rounded-full', STATUS_COLORS[status])} />
                     <span className="text-sm font-medium text-slate-200">Medical Agent</span>
                     <span className="text-xs text-slate-500">({STATUS_LABELS[status]})</span>
-                    {!wsConnected && (
-                        <span className="text-xs text-red-400">WS disconnected</span>
-                    )}
                 </div>
-                <div className="flex gap-1">
-                    <button
-                        onClick={onClear}
-                        className="rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-700 hover:text-slate-200"
-                    >
-                        Clear
-                    </button>
-                </div>
+                <button
+                    onClick={onClear}
+                    className="rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                >
+                    Clear
+                </button>
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-3 py-3">
-                {messages.length === 0 && !currentStep && (
+                {messages.length === 0 && (
                     <div className="flex h-full items-center justify-center text-slate-500 text-sm">
                         <div className="text-center">
                             <p className="mb-1 text-lg">&#x1F489;</p>
-                            <p>Enter a command to control the medical planning software</p>
-                            <p className="mt-1 text-xs">Or type a message to chat with the AI</p>
+                            <p>Ask me anything about the medical planning software</p>
                         </div>
                     </div>
                 )}
@@ -101,40 +92,36 @@ export function ChatView({ messages, currentStep, status, wsConnected, onSend, o
                     <MessageBubble key={msg.id} message={msg} />
                 ))}
 
-                {currentStep && <StepCard step={currentStep} />}
+                {isBusy && (
+                    <div className="flex justify-start mb-3">
+                        <div className="rounded-lg bg-slate-700 px-3 py-2 text-xs text-slate-400">
+                            Thinking...
+                        </div>
+                    </div>
+                )}
+
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
-            <form
-                onSubmit={handleSubmit}
-                className="border-t border-slate-700 p-3"
-            >
+            <form onSubmit={handleSubmit} className="border-t border-slate-700 p-3">
                 <textarea
                     ref={inputRef}
                     value={input}
                     onChange={handleInput}
                     onKeyDown={handleKeyDown}
-                    placeholder="Enter your command..."
-                    disabled={isRunning}
+                    placeholder="Enter your message..."
+                    disabled={isBusy}
                     rows={1}
                     className="w-full resize-none rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
                 />
-                <div className="mt-2 flex justify-end gap-2">
-                    {isRunning && (
-                        <button
-                            type="button"
-                            onClick={onStop}
-                            className="rounded-lg bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
-                        >
-                            Stop
-                        </button>
-                    )}
+                <div className="mt-2 flex justify-end">
                     <button
                         type="submit"
-                        disabled={isRunning || !input.trim()}
+                        disabled={isBusy || !input.trim()}
                         className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {isRunning ? '...' : 'Send'}
+                        Send
                     </button>
                 </div>
             </form>

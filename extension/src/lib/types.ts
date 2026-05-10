@@ -4,13 +4,6 @@ export interface ModelConfig {
     baseUrl: string;
 }
 
-export interface AgentConfig extends ModelConfig {
-    task: string;
-    maxSteps: number;
-    useVision: boolean;
-    skills: string[];
-}
-
 export type AgentStatus = 'idle' | 'connecting' | 'running' | 'completed' | 'error' | 'stopped';
 
 export interface ChatMessage {
@@ -18,32 +11,6 @@ export interface ChatMessage {
     role: 'user' | 'agent' | 'system';
     content: string;
     timestamp: number;
-}
-
-export interface AgentStep {
-    stepNumber: number;
-    thinking: string;
-    evaluation: string;
-    nextGoal: string;
-    actions: Array<Record<string, unknown>>;
-    url: string;
-}
-
-export interface WsMessage {
-    type: string;
-    session_id?: string;
-    message?: string;
-    error?: string;
-    available?: boolean;
-    status?: string;
-    success?: boolean;
-    summary?: string;
-    step_number?: number;
-    thinking?: string;
-    evaluation?: string;
-    next_goal?: string;
-    actions?: Array<Record<string, unknown>>;
-    url?: string;
 }
 
 export const DEFAULT_CONFIG: ModelConfig = {

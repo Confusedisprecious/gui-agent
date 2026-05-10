@@ -7,43 +7,15 @@ type View = 'chat' | 'config';
 
 export default function App() {
     const [view, setView] = useState<View>('chat');
-    const {
-        status,
-        wsConnected,
-        messages,
-        currentStep,
-        error,
-        sendChat,
-        executeTask,
-        stopTask,
-        clearMessages,
-    } = useAgent();
-
-    function handleSend(text: string) {
-        // Try to detect if it's a browser task or a chat message
-        // Browser tasks typically mention specific actions
-        const taskPhrases = ['help me', 'go to', 'click', 'type', 'scroll', 'find', 'search',
-            'open', 'navigate', 'fill', 'submit', 'extract', 'plan', 'schedule', 'patient',
-            'treatment', 'dose', 'drug', 'medication'];
-        const isTask = taskPhrases.some((p) => text.toLowerCase().includes(p));
-
-        if (isTask) {
-            executeTask(text);
-        } else {
-            sendChat(text);
-        }
-    }
+    const { status, messages, error, sendMessage, clearMessages } = useAgent();
 
     return (
         <div className="flex h-full flex-col bg-slate-900">
             {view === 'chat' ? (
                 <ChatView
                     messages={messages}
-                    currentStep={currentStep}
                     status={status}
-                    wsConnected={wsConnected}
-                    onSend={handleSend}
-                    onStop={stopTask}
+                    onSend={sendMessage}
                     onClear={clearMessages}
                 />
             ) : (

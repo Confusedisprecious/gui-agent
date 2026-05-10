@@ -1,5 +1,4 @@
 import { type FormEvent, useEffect, useState } from 'react';
-import { loadConfig, saveConfig } from '@/lib/storage';
 import type { ModelConfig } from '@/lib/types';
 import { DEFAULT_CONFIG } from '@/lib/types';
 
@@ -10,35 +9,38 @@ interface Props {
 export function ConfigPanel({ onClose }: Props) {
     const [config, setConfig] = useState<ModelConfig>(DEFAULT_CONFIG);
     const [saved, setSaved] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        loadConfig().then(setConfig);
+        chrome.runtime.sendMessage({ type: 'get_config' }).then((cfg) => {
+            if (cfg && cfg.apiKey) {
+                setConfig({ ...DEFAULT_CONFIG, ...cfg });
+            }
+            setLoaded(true);
+        });
     }, []);
 
     async function handleSave(e: FormEvent) {
         e.preventDefault();
-        await saveConfig(config);
+        await chrome.runtime.sendMessage({ type: 'save_config', config });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     }
+
+    if (!loaded) return null;
 
     return (
         <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-slate-700 px-3 py-2">
                 <span className="text-sm font-medium text-slate-200">Model Configuration</span>
-                <button
-                    onClick={onClose}
-                    className="text-xs text-slate-400 hover:text-slate-200"
-                >
+                <button onClick={onClose} className="text-xs text-slate-400 hover:text-slate-200">
                     &#x2715;
                 </button>
             </div>
 
             <form onSubmit={handleSave} className="flex-1 space-y-4 p-4">
                 <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
-                        API Key
-                    </label>
+                    <label className="mb-1 block text-xs font-medium text-slate-400">API Key</label>
                     <input
                         type="password"
                         value={config.apiKey}
@@ -49,9 +51,7 @@ export function ConfigPanel({ onClose }: Props) {
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
-                        Model Name
-                    </label>
+                    <label className="mb-1 block text-xs font-medium text-slate-400">Model Name</label>
                     <input
                         type="text"
                         value={config.model}
@@ -62,9 +62,7 @@ export function ConfigPanel({ onClose }: Props) {
                 </div>
 
                 <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
-                        Base URL
-                    </label>
+                    <label className="mb-1 block text-xs font-medium text-slate-400">Base URL</label>
                     <input
                         type="text"
                         value={config.baseUrl}
