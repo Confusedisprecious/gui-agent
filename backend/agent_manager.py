@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
 
 import httpx
 from browser_use import Agent, BrowserProfile, BrowserSession
@@ -14,17 +13,24 @@ from models import AgentConfig
 logger = logging.getLogger(__name__)
 
 
-@dataclass
 class Session:
-    agent: Agent | None = None
-    browser_session: BrowserSession | None = None
-    config: AgentConfig = field(default_factory=AgentConfig)
-    send_callback: Callable[[dict], Awaitable[None]] | None = None
+    def __init__(
+        self,
+        agent: Agent | None = None,
+        browser_session: BrowserSession | None = None,
+        config: AgentConfig | None = None,
+        send_callback: Callable[[dict], Awaitable[None]] | None = None,
+    ):
+        self.agent = agent
+        self.browser_session = browser_session
+        self.config = config or AgentConfig()
+        self.send_callback = send_callback
 
 
 class AgentManager:
-    def __init__(self, cdp_url: str = "http://localhost:9222"):
+    def __init__(self, cdp_url: str = "http://localhost:9222", cdp_proxy=None):
         self.cdp_url = cdp_url
+        self.cdp_proxy = cdp_proxy
         self.sessions: dict[str, Session] = {}
 
     async def check_cdp(self) -> bool:
@@ -42,6 +48,10 @@ class AgentManager:
         llm: BaseChatModel,
         send_callback: Callable[[dict], Awaitable[None]],
     ) -> Session:
+        # Register a CDP proxy session so Playwright can connect through the bridge
+        if self.cdp_proxy:
+            await self.cdp_proxy.register(session_id)
+
         browser_profile = BrowserProfile(
             cdp_url=self.cdp_url,
             is_local=True,

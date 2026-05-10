@@ -33,6 +33,7 @@ export function useAgent() {
                         nextGoal: data.next_goal || '',
                         actions: data.actions || [],
                         url: data.url || '',
+                        activeSkills: data.activeSkills || [],
                     });
                     if (data.url) setPageUrl(data.url);
                     break;
@@ -89,8 +90,8 @@ export function useAgent() {
             '填写', '点击', '搜索', '打开', '跳转', '输入'];
         const isTask = taskKeywords.some((kw) => text.toLowerCase().includes(kw));
 
-        if (isTask && wsConnected) {
-            // Use browser-use backend
+        if (isTask) {
+            // Use native CDP browser agent (always available)
             setStatus('connecting');
             try {
                 const response = await chrome.runtime.sendMessage({
@@ -100,7 +101,7 @@ export function useAgent() {
                 if (response?.error) {
                     throw new Error(response.error);
                 }
-                // Task accepted - status will update via WS messages
+                // Task accepted - status will update via broadcast messages
             } catch (e) {
                 const errMsg = e instanceof Error ? e.message : 'Unknown error';
                 setError(errMsg);
@@ -152,7 +153,7 @@ export function useAgent() {
                 setStatus('error');
             }
         }
-    }, [messages, history, wsConnected]);
+    }, [messages, history]);
 
     const stopTask = useCallback(() => {
         chrome.runtime.sendMessage({ type: 'stop_task' });

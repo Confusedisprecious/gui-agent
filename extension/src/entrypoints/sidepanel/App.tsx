@@ -8,7 +8,7 @@ type View = 'chat' | 'config';
 export default function App() {
     const [view, setView] = useState<View>('chat');
     const {
-        status, wsConnected, messages, currentStep,
+        status, messages, currentStep,
         error, pageUrl, pageTitle,
         sendMessage, stopTask, clearMessages,
     } = useAgent();
@@ -20,7 +20,6 @@ export default function App() {
                     messages={messages}
                     currentStep={currentStep}
                     status={status}
-                    wsConnected={wsConnected}
                     pageUrl={pageUrl}
                     pageTitle={pageTitle}
                     onSend={sendMessage}

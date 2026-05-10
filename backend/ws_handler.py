@@ -4,6 +4,7 @@ import logging
 from fastapi import WebSocket
 
 from agent_manager import AgentManager
+from cdp_proxy import CdpProxyManager
 from llm_factory import create_llm
 from models import AgentConfig
 
@@ -11,8 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketHandler:
-    def __init__(self, agent_manager: AgentManager):
+    def __init__(self, agent_manager: AgentManager, cdp_proxy: CdpProxyManager):
         self.agent_manager = agent_manager
+        self.cdp_proxy = cdp_proxy
         self.connections: dict[str, WebSocket] = {}
 
     async def handle_connection(self, websocket: WebSocket):
@@ -128,6 +130,14 @@ class WebSocketHandler:
         )
 
         await send_callback({"type": "status_change", "session_id": session_id, "status": "starting"})
+
+        # Tell the extension to connect the CDP bridge
+        if self.cdp_proxy:
+            await send_callback({
+                "type": "start_cdp_bridge",
+                "session_id": session_id,
+                "bridge_url": f"ws://127.0.0.1:8765/cdp-bridge?session_id={session_id}",
+            })
 
         try:
             await self.agent_manager.create_agent(session_id, config, llm, send_callback)

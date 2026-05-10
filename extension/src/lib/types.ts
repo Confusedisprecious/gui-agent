@@ -20,10 +20,11 @@ export interface AgentStep {
     nextGoal: string;
     actions: Array<Record<string, unknown>>;
     url: string;
+    activeSkills?: Array<{ name: string; icon: string }>;
 }
 
 export const DEFAULT_CONFIG: ModelConfig = {
-    apiKey: 'sk-16b78952b84d4e7c9ab071f8ce5e9dca',
+    apiKey: '',
     model: 'deepseek-v4-flash',
     baseUrl: 'https://api.deepseek.com/v1',
 };

@@ -9,7 +9,6 @@ interface Props {
     messages: ChatMessage[];
     currentStep: AgentStep | null;
     status: AgentStatus;
-    wsConnected: boolean;
     pageUrl?: string;
     pageTitle?: string;
     onSend: (text: string) => void;
@@ -36,7 +35,7 @@ const STATUS_COLORS: Record<AgentStatus, string> = {
 };
 
 export function ChatView({
-    messages, currentStep, status, wsConnected,
+    messages, currentStep, status,
     pageUrl, pageTitle, onSend, onStop, onClear,
 }: Props) {
     const [input, setInput] = useState('');
@@ -87,6 +86,22 @@ export function ChatView({
                 </button>
             </div>
 
+            {/* Skills indicator */}
+            {currentStep?.activeSkills && currentStep.activeSkills.length > 0 && (
+                <div className="border-b border-slate-700/50 bg-indigo-950/30 px-3 py-1.5">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-indigo-400">⚡ 技能:</span>
+                        {currentStep.activeSkills.map((s, i) => (
+                            <span
+                                key={i}
+                                className="inline-flex items-center gap-0.5 rounded-full bg-indigo-800/60 border border-indigo-500/50 px-2 py-0.5 text-[10px] text-indigo-200"
+                            >
+                                {s.icon} {s.name}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
             {/* Connection indicators */}
             {pageUrl && (
                 <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1">
@@ -96,14 +111,9 @@ export function ChatView({
                 </div>
             )}
             <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1">
-                <span className={cn('text-xs', wsConnected ? 'text-green-400' : 'text-red-400')}>
-                    {wsConnected ? '● Browser Control: Connected' : '○ Browser Control: Offline'}
+                <span className="text-xs text-green-400">
+                    ● Browser Control: Ready
                 </span>
-                {!wsConnected && (
-                    <span className="ml-2 text-xs text-slate-500">
-                        (run start_all.bat for full control)
-                    </span>
-                )}
             </div>
 
             {/* Messages */}
@@ -141,9 +151,7 @@ export function ChatView({
                     value={input}
                     onChange={handleInput}
                     onKeyDown={handleKeyDown}
-                    placeholder={wsConnected
-                        ? 'Chat or give browser commands...'
-                        : 'Chat about the current page...'}
+                    placeholder="Chat or give browser commands..."
                     disabled={isBusy}
                     rows={1}
                     className="w-full resize-none rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"

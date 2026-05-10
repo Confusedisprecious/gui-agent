@@ -7,6 +7,8 @@ node_modules/
 dist/
 .wxt/
 .output/
+.env.local
+*.log
 .env
 *.egg-info/
 .omc/
