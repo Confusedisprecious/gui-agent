@@ -91,6 +91,7 @@ export function getActivatedInstructions(
     const skillDefs = skills.filter((s) =>
         active.some((a) => a.name === s.name),
     );
+    if (skillDefs.length === 0) return '';
 
     const blocks = skillDefs.map((s, i) =>
         `### ${i + 1}. ${s.icon} ${s.name}\n<command-name>${s.name}</command-name>\n${s.instructions}`,
