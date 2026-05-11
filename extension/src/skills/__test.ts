@@ -2,11 +2,14 @@
  * Skills 系统测试脚本
  * 运行: npx tsx src/skills/__test.ts
  *
- * 技能文件直接从 definitions/ 目录导入（绕过 Vite 的 import.meta.glob）。
- * 新增技能后，在这里加一行 import 即可。
+ * 直接用 fs 读取 skills/ 下的 SKILL.md 文件，不会触发 Vite 的 import.meta.glob。
+ * 新增技能后会自动被扫描到（遍历 skills/ 目录）。
  */
-import testMedical from './definitions/test-medical';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { SkillDefinition } from './types';
+import { parseFrontmatter } from './frontmatter';
 import {
     getSkillsMetadata,
     renderMetadataPrompt,
@@ -16,8 +19,30 @@ import {
     matchAndActivate,
 } from './loader';
 
-// 手动聚合技能列表（Node.js 不支持 import.meta.glob）
-const SKILLS: SkillDefinition[] = [testMedical];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Scan skills/ directory for SKILL.md files (mirrors Vite's import.meta.glob at build time)
+function discoverSkills(): SkillDefinition[] {
+    const skillsDir = path.resolve(__dirname, '../../skills');
+    if (!fs.existsSync(skillsDir)) return [];
+
+    const skills: SkillDefinition[] = [];
+    for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const mdPath = path.join(skillsDir, entry.name, 'SKILL.md');
+        if (!fs.existsSync(mdPath)) continue;
+        try {
+            const content = fs.readFileSync(mdPath, 'utf-8');
+            skills.push(parseFrontmatter(content));
+        } catch (e) {
+            console.warn(`[Test] Failed to parse ${mdPath}:`, e);
+        }
+    }
+    return skills;
+}
+
+const SKILLS = discoverSkills();
 
 let passed = 0;
 let failed = 0;
@@ -38,11 +63,30 @@ function assert(cond: boolean, msg: string) {
     if (!cond) throw new Error(msg);
 }
 
-console.log('=== Skills 系统测试 ===\n');
+console.log('=== Skills 系统测试 ===');
+console.log(`发现 ${SKILLS.length} 个技能: ${SKILLS.map((s) => s.name).join(', ')}\n`);
+
+// ── Step 1: Discovery ─────────────────────────────────────
+
+console.log('Step 1 — 扫描发现:');
+
+test('discoverSkills 发现至少一个技能', () => {
+    assert(SKILLS.length > 0, '应至少发现 test-medical');
+});
+
+test('发现的技能有完整字段', () => {
+    for (const s of SKILLS) {
+        assert(s.name.length > 0, `${s.name}: 缺少 name`);
+        assert(s.description.length > 0, `${s.name}: 缺少 description`);
+        assert(s.icon.length > 0, `${s.name}: 缺少 icon`);
+        assert(s.triggers.length > 0, `${s.name}: 缺少 triggers`);
+        assert(s.instructions.length > 0, `${s.name}: 缺少 instructions`);
+    }
+});
 
 // ── Step 2: Metadata Loading ──────────────────────────────
 
-console.log('Step 2 — 元数据加载:');
+console.log('\nStep 2 — 元数据加载:');
 
 test('getSkillsMetadata 返回正确数量', () => {
     const meta = getSkillsMetadata(SKILLS);
@@ -64,7 +108,7 @@ test('renderMetadataPrompt 生成 XML 格式', () => {
     assert(prompt.includes('<available_skills>'), '应包含 <available_skills>');
     assert(prompt.includes('</available_skills>'), '应包含 </available_skills>');
     assert(prompt.includes('<skill>'), '应包含 <skill>');
-    assert(prompt.includes(SKILLS[0].name), '应包含技能名称');
+    assert(prompt.includes(SKILLS[0]!.name), '应包含技能名称');
 });
 
 test('renderMetadataPrompt 空数组返回空字符串', () => {
@@ -78,8 +122,8 @@ console.log('\nStep 3A — 关键字匹配:');
 test('中文医疗关键词触发匹配', () => {
     const active = matchByKeywords(SKILLS, '帮我搜索患者张三的病历');
     assert(active.length > 0, '应至少匹配一个技能');
-    assert(active[0].name === 'test-medical', '应匹配test-medical');
-    assert(active[0].source === 'keyword', '来源应为 keyword');
+    assert(active[0]!.name === 'test-medical', '应匹配test-medical');
+    assert(active[0]!.source === 'keyword', '来源应为 keyword');
 });
 
 test('英文关键词触发匹配', () => {

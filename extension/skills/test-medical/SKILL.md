@@ -1,17 +1,39 @@
-import type { SkillDefinition } from '../types';
+---
+name: test-medical
+description: 医疗规划软件测试技能 - 处理患者信息填写、病历搜索、治疗方案等医疗规划任务
+icon: 🏥
+triggers:
+  - 患者
+  - 病例
+  - 病历
+  - 治疗
+  - 处方
+  - 用药
+  - 诊断
+  - 医生
+  - 护士
+  - 科室
+  - 挂号
+  - 就诊
+  - 住院
+  - 出院
+  - 药品
+  - 剂量
+  - 检查
+  - 检验
+  - 手术
+  - 麻醉
+  - 护理
+  - patient
+  - treatment
+  - drug
+  - dose
+  - diagnosis
+  - medical
+  - clinical
+  - prescription
+---
 
-const skill: SkillDefinition = {
-    name: 'test-medical',
-    description: '专门处理医疗规划软件中的患者数据填写、记录搜索、治疗方案制定等任务',
-    icon: '🏥',
-    triggers: [
-        '患者', '病例', '病历', '治疗', '处方', '用药', '诊断',
-        '医生', '护士', '科室', '挂号', '就诊', '住院', '出院',
-        '药品', '剂量', '检查', '检验', '手术', '麻醉', '护理',
-        'patient', 'treatment', 'drug', 'dose', 'diagnosis',
-        'medical', 'clinical', 'prescription',
-    ],
-    instructions: `
 ## 医疗规划助手技能
 
 你是医疗规划软件的智能助手，帮助用户完成以下操作：
@@ -29,7 +51,3 @@ const skill: SkillDefinition = {
 - 下拉选择框广泛用于科室、药品、诊断类型等选择
 - 提交操作前确认所有必填项已填写
 - 操作完成后确认页面反馈（如"保存成功"提示或页面跳转）
-`,
-};
-
-export default skill;
