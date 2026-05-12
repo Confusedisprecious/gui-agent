@@ -12,6 +12,9 @@ import { parseFrontmatter } from './frontmatter';
  * No code changes needed.
  */
 
+/** Directories to exclude from discovery (dev tools, not runtime skills) */
+const EXCLUDE_DIRS = ['skill-creator'];
+
 function loadSkills(): SkillDefinition[] {
     const mdModules = import.meta.glob<string>(
         '../../skills/**/SKILL.md',
@@ -21,6 +24,7 @@ function loadSkills(): SkillDefinition[] {
     const skills: SkillDefinition[] = [];
 
     for (const [path, content] of Object.entries(mdModules)) {
+        if (EXCLUDE_DIRS.some((d) => path.includes(`/${d}/`))) continue;
         try {
             skills.push(parseFrontmatter(content));
         } catch (e) {

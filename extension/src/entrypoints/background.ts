@@ -1,4 +1,4 @@
-import { matchAndActivate, getSkillsMetadata, renderMetadataPrompt } from '@/skills/loader';
+import { activateAll, getSkillsMetadata, renderMetadataPrompt } from '@/skills/loader';
 import { SKILLS } from '@/skills/definitions';
 
 export default defineBackground(() => {
@@ -494,7 +494,7 @@ ${skillsMetaPrompt}
         broadcast({ type: 'status_change', session_id: 'native', status: 'running' });
 
         // Step 3-4: Match and activate skills based on task keywords
-        const { activeSkills, instructions: skillInstructions } = matchAndActivate(SKILLS, task);
+        const { activeSkills, instructions: skillInstructions } = activateAll(SKILLS);
         if (activeSkills.length > 0) {
             console.log('[MedicalAgent] Skills activated:', activeSkills.map((s) => s.name));
         }

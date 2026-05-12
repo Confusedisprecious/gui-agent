@@ -1,25 +1,21 @@
-/** Full skill definition — all data for one skill */
+/** Full skill definition — loaded from SKILL.md via frontmatter parsing */
 export interface SkillDefinition {
     name: string;
     description: string;
     icon: string;
-    /** Always-active triggers — auto-activate when keywords present */
-    triggers: string[];
-    /** Full instructions — only injected when skill is activated */
+    /** Full markdown body — injected when skill is activated */
     instructions: string;
 }
 
-/** Lightweight metadata — always in system prompt (~50 words/skill) */
+/** Lightweight metadata — always in system prompt (~100 words/skill) */
 export interface SkillMetadata {
     name: string;
     description: string;
     icon: string;
 }
 
-/** An activated skill with match source info */
+/** An activated skill shown in the UI badge */
 export interface ActiveSkill {
     name: string;
     icon: string;
-    /** How this skill was matched */
-    source: 'keyword' | 'llm';
 }

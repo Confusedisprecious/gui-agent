@@ -4,7 +4,9 @@ import type { SkillDefinition, SkillMetadata, ActiveSkill } from './types';
 //  Step 2 — Metadata Loading (元数据加载)
 //    Lightweight: name + description + icon. Always in the system prompt.
 //    The LLM sees what skills are available and decides which to use.
-//    ~50 words per skill — cheap to keep in context permanently.
+//    ~100 words per skill — cheap to keep in context permanently.
+//    Matching is purely LLM semantic: the description field tells the LLM
+//    when to use the skill (standard SKILL.md behavior).
 // =========================================================================
 
 /** Extract lightweight metadata from all skills (Step 2 — always in prompt) */
@@ -29,38 +31,12 @@ export function renderMetadataPrompt(meta: SkillMetadata[]): string {
 
 // =========================================================================
 //  Step 3 — Request Matching (请求匹配)
-//    Two-level matching inspired by Claude Code's approach:
-//    A) Keyword pre-filter: triggers in user task → candidate skills (fast)
-//    B) LLM semantic match: LLM decides activation based on metadata (accurate)
-//       The metadata in the system prompt enables the LLM to self-select.
+//    LLM semantic matching: the LLM sees skill metadata in the system prompt
+//    and self-selects which skills to use. This mirrors Claude Code's approach
+//    where the description field is the primary triggering mechanism.
 // =========================================================================
 
-/** Keyword-based pre-filter (Step 3A) — fast first pass */
-export function matchByKeywords(
-    skills: SkillDefinition[],
-    task: string,
-    pageText?: string,
-): ActiveSkill[] {
-    const searchText = (task + ' ' + (pageText || '')).toLowerCase();
-    const active: ActiveSkill[] = [];
-
-    for (const skill of skills) {
-        const hit = skill.triggers.some((t) =>
-            searchText.includes(t.toLowerCase()),
-        );
-        if (hit) {
-            active.push({ name: skill.name, icon: skill.icon, source: 'keyword' });
-        }
-    }
-    return active;
-}
-
-/**
- * Build the LLM matching prompt (Step 3B).
- * When the LLM sees this in the system prompt, it can self-select skills
- * by outputting a skill activation command. This mirrors Claude Code's
- * approach where the LLM itself decides skill activation.
- */
+/** Build the skill router prompt for LLM semantic matching (Step 3) */
 export function buildSkillRouterPrompt(skills: SkillDefinition[]): string {
     if (skills.length === 0) return '';
     const lines = skills.map((s, i) =>
@@ -75,9 +51,8 @@ export function buildSkillRouterPrompt(skills: SkillDefinition[]): string {
 
 // =========================================================================
 //  Step 4 — Activation Execution (激活执行)
-//    When a skill is matched (keyword or LLM), its full instructions are
-//    injected into the system prompt. The UI shows the active skill badges.
-//    Mirrors Claude Code's <command-name>skill-name</command-name> pattern.
+//    Full instructions injected when a skill is used. Mirrors Claude Code's
+//    <command-name>skill-name</command-name> pattern.
 // =========================================================================
 
 /** Load full instructions for activated skills (Step 4) */
@@ -100,19 +75,18 @@ export function getActivatedInstructions(
 }
 
 // =========================================================================
-//  Convenience — one-call skill matching for the native agent
+//  Convenience — activate all skills (LLM self-selects via metadata)
 // =========================================================================
 
-/** Run full matching pipeline and return instructions string */
-export function matchAndActivate(
-    skills: SkillDefinition[],
-    task: string,
-    pageText?: string,
-): {
+/** Activate all known skills — the LLM decides which to use based on metadata */
+export function activateAll(skills: SkillDefinition[]): {
     activeSkills: ActiveSkill[];
     instructions: string;
 } {
-    const activeSkills = matchByKeywords(skills, task, pageText);
+    const activeSkills: ActiveSkill[] = skills.map((s) => ({
+        name: s.name,
+        icon: s.icon,
+    }));
     const instructions = getActivatedInstructions(skills, activeSkills);
     return { activeSkills, instructions };
 }

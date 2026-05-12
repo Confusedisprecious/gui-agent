@@ -1,37 +1,6 @@
 ---
 name: test-medical
-description: 医疗规划软件测试技能 - 处理患者信息填写、病历搜索、治疗方案等医疗规划任务
-icon: 🏥
-triggers:
-  - 患者
-  - 病例
-  - 病历
-  - 治疗
-  - 处方
-  - 用药
-  - 诊断
-  - 医生
-  - 护士
-  - 科室
-  - 挂号
-  - 就诊
-  - 住院
-  - 出院
-  - 药品
-  - 剂量
-  - 检查
-  - 检验
-  - 手术
-  - 麻醉
-  - 护理
-  - patient
-  - treatment
-  - drug
-  - dose
-  - diagnosis
-  - medical
-  - clinical
-  - prescription
+description: 医疗规划软件测试技能 - 处理患者信息填写、病历搜索、治疗方案等医疗规划任务。当用户提到患者、病历、治疗、处方、药品、诊断、检查、科室、搜索、填写时使用。
 ---
 
 ## 医疗规划助手技能
