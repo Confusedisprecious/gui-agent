@@ -1,11 +1,11 @@
-# Medical Agent — AI 浏览器智能助手
+# Gui Agent — AI 浏览器智能助手
 
-Chrome 扩展形态的 AI 智能体，为医学规划软件提供自然语言驱动的浏览器自动化能力。通过侧边栏对话框与 AI 对话，自动操控浏览器完成患者数据填写、病历搜索、治疗方案制定等任务。
+Chrome 扩展形态的 AI 智能体，为通用软件提供自然语言驱动的浏览器自动化能力。通过侧边栏对话框与 AI 对话，自动操控浏览器完成数据填写、搜索、方案制定等任务，并支持skills系统。
 
 ## 架构
 
 ```
-Chrome（医学规划软件页面）
+Chrome（软件页面）
   └── Chrome 扩展 (Side Panel)
        ├── float-button.content.ts    页面右下角浮标入口
        ├── background.ts              原生 CDP Agent + 直接对话 + CDP Bridge
